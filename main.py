@@ -468,8 +468,7 @@ class mywindow(Ui_Dialog):
                 #print(success)
                 if self.VIS_RECGTANGLE:
                     print("画框")
-                    #cv2.rectangle(frame,(int(frame.shape[1]*self.yolo_thread.BOUNDING[0]),int(frame.shape[0]*self.yolo_thread.BOUNDING[2])),
-					#(int(frame.shape[1]*self.yolo_thread.BOUNDING[1]),int(frame.shape[0]*self.yolo_thread.BOUNDING[3])),(0,255,0),3)
+
 
                 global pt_video_counter
                 frame = cv2.cvtColor(frame_o, cv2.COLOR_BGR2RGB)
