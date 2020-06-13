@@ -123,6 +123,25 @@ class MODEL_thread(threading.Thread):
             '''
     def close(self):
         pass
+class Car:
+    def __init__(self,c_id,c_x,c_y,derection,c_count):
+        self.c_id = c_id
+        self.c_x=c_x
+        self.c_y=c_y
+        self.derection = derection
+        self.c_count = c_count
+
+
+
+    def updateCoords(self,x,y):
+        self.c_x= x
+        self.c_y=y
+
+count_up = 0
+count_down = 0
+cars = []
+pid = 1
+
 
 class YOLO_thread(threading.Thread):
     def __init__(self):
@@ -177,11 +196,13 @@ class YOLO_thread(threading.Thread):
             (H, W) = img.shape[:2]
             ln = self.net.getLayerNames()
             ln = [ln[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
+
             blob = cv2.dnn.blobFromImage(img, 1 / 255.0, (416, 416),swapRB=True, crop=False)
             self.net.setInput(blob)
             layerOutputs = self.net.forward(ln)
             boxes=[]
             confidences=[]
+
             for output in layerOutputs:
                 # 对每个检测进行循环
                 for detection in output:
@@ -227,31 +248,20 @@ class YOLO_thread(threading.Thread):
                             nd.settable(False,self.LABELS[classIDs[i]],str(confidences[i]),False,False,False)
                             img_crop=img[y:y+h,x:x+w]
 
-                            cv2.rectangle(img, (x, y), (x+w, y+h), (55,255,155), 5)
-
-
-
                             ################################
                             save_time = time.strftime('%H{h}%M{f}%S{s}%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日', h='时', f='分', s='秒')
                             filepath = os.path.join(CURPATH,'archives\{}.jpg'.format(transfer_time_format(save_time)))
 
-
-                            #print(x)
-                            #cv2.rectangle(img_o, (x, y), (x + w,y + h), (55, 255, 155),5)
-
-
                             print("重叠度" + str(IOU))
                             print(filepath)
 
-                            #srcImage = cv2.imread("F:\\workspace\\python_workspace\\test\\0.jpg", 1);
-                            #flag_ = cv2.imwrite(filepath, srcImage)
+
                             flag_=cv2.imwrite(filepath,img_crop )#save vehicle image by name of time
                             if not flag_:
                                 print('图片保存失败')
                             nd.settable(save_time,False,False,False,False,False,)
                             #########################
-                            #pinpai_img_q.put(img_crop)
-                            #to_color_q.put(img_crop)#img_crop is a PIL format image
+
                             img_car_q.put(img_crop)
                             if not even_model.is_set():
                                 even_model.set()
@@ -373,7 +383,7 @@ class mywindow(Ui_Dialog):
 
         self.timer = VideoTimer()
         self.timer.timeSignal.signal[str].connect(self.show_video_images)#once timer emit a signal,run show_video_images()
-        self.INTERVAL = 0.5
+        self.INTERVAL = 0.2
         self.VIS_RECGTANGLE = 0
     def openimage(self):
         global pt_video_counter
@@ -468,7 +478,7 @@ class mywindow(Ui_Dialog):
                 temp_pixmap = QPixmap.fromImage(temp_image)
                 temp_pixmap=temp_pixmap.scaled(self.graphicsView.width(),self.graphicsView.height())
 
-                self.graphicsView.setPixmap(temp_pixmap)
+                #self.graphicsView.setPixmap(temp_pixmap)
 
                 #cv2.rectangle(frame, (int(frame.shape[1] * self.yolo_thread.BOUNDING[0]), int(frame.shape[0] * self.yolo_thread.BOUNDING[2])),(int(frame.shape[1] * self.yolo_thread.BOUNDING[1]),int(frame.shape[0] * self.yolo_thread.BOUNDING[3])), (0, 255, 0), 3)
                 pt_video_counter+=1
