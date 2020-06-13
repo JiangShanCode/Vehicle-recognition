@@ -478,7 +478,7 @@ class mywindow(Ui_Dialog):
                 temp_pixmap = QPixmap.fromImage(temp_image)
                 temp_pixmap=temp_pixmap.scaled(self.graphicsView.width(),self.graphicsView.height())
 
-                #self.graphicsView.setPixmap(temp_pixmap)
+                self.graphicsView.setPixmap(temp_pixmap)
 
                 #cv2.rectangle(frame, (int(frame.shape[1] * self.yolo_thread.BOUNDING[0]), int(frame.shape[0] * self.yolo_thread.BOUNDING[2])),(int(frame.shape[1] * self.yolo_thread.BOUNDING[1]),int(frame.shape[0] * self.yolo_thread.BOUNDING[3])), (0, 255, 0), 3)
                 pt_video_counter+=1
