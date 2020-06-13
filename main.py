@@ -463,7 +463,7 @@ class mywindow(Ui_Dialog):
         #if video is open successfully,read it
         if self.playCapture.isOpened():
             success, frame_o = self.playCapture.read()
-            #,frame is a ndarray,frame.shape index 0 and 1 stand for height and width
+
             if success:
                 #print(success)
                 if self.VIS_RECGTANGLE:
