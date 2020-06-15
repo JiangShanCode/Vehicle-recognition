@@ -11,8 +11,6 @@ class Car:
         self.derection = derection
         self.c_count = c_count
 
-
-
     def updateCoords(self,x,y):
         self.c_x= x
         self.c_y=y
@@ -66,8 +64,8 @@ while True:
     cv.line(frame, (0, 700), (1920, 700), (0, 255, 0), 3)
     cv.line(frame, (0, 400), (1920, 400), (0, 255, 0), 3)
     cv.line(frame, (1000, 0), (1000, 1080), (0, 255, 0), 1)
-    cv.putText(frame, "Up:" + str(count_up), (100, 100), cv.FONT_HERSHEY_COMPLEX, 2, (0, 0, 255), 2)
-    cv.putText(frame, "Down:" + str(count_down), (100, 200), cv.FONT_HERSHEY_COMPLEX, 2, (0, 0, 255), 2)
+    cv.putText(frame, "Up:" + str(count_up), (100, 200), cv.FONT_HERSHEY_COMPLEX, 2, (0, 0, 255), 2)
+    cv.putText(frame, "Down:" + str(count_down), (100, 300), cv.FONT_HERSHEY_COMPLEX, 2, (0, 0, 255), 2)
     for detection in cvOut[0,0,:,:]:
         score = float(detection[2])
         objIndex = int(detection[1])
@@ -108,6 +106,7 @@ while True:
 
                             count_down += 1
                             i.c_count = True
+
                         if i.c_y < 350 and i.derection == 'up' and i.c_count == False:
 
                             image = frame[int(top): int(bottom), int(left):int(right)]
