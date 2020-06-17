@@ -1,7 +1,9 @@
+
 # coding=utf-8
-# created by pt,2019-3-18 16:31:56,
 import os
 import sys
+from random import random
+
 import cv2
 from hyperlpr import *  # this is new plate recognition function package
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QStyle
@@ -105,6 +107,8 @@ class YOLO_thread(threading.Thread):
 
         self.car_q = []
         self.pid = 1
+        self.count_up = 0
+        self.count_down = 0
 
     def run(self):
         print("运行一次")
@@ -198,13 +202,19 @@ class YOLO_thread(threading.Thread):
                                     new = False
                                     print("同一辆车")
                                     # 防止开头
-                                    if j.c_id > 2:
-                                        self.car_q.remove(j)
-
+                                    #if j.c_id > 2:
+                                    if cy > j.c_y and random() > 0.5:
+                                        #i.derection = 'down'
+                                        self.count_down += 1
+                                    if cy < j.c_y and random() > 0.5:
+                                        #i.derection = 'up'
+                                        self.count_up += 1
+                                    self.car_q.remove(j)
+                                    break
                                     # self.pid =self.pid + 1
                                     # p = Car(self.pid, cx, cy, 'unknow', True)
                                     # self.car_q.append(p)
-                                    break
+
 
                             if new == True:
                                 type_q.put(self.LABELS[classIDs[i]])
@@ -217,16 +227,18 @@ class YOLO_thread(threading.Thread):
                                 save_time = time.strftime('%H{h}%M{f}%S{s}%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日',
                                                                                                    h='时',
                                                                                                    f='分', s='秒')
-                                filepath = os.path.join(CURPATH,'archives\{}.jpg'.format(transfer_time_format(save_time)))
+                                filepath = os.path.join(CURPATH,
+                                                        'archives\{}.jpg'.format(transfer_time_format(save_time)))
                                 print(filepath)
-                                flag_ = cv2.imwrite(filepath, img_crop)  # save vehicle image by name of time
-                                if not flag_:
+                                try:
+                                    flag_ = cv2.imwrite(filepath, img_crop)  # save vehicle image by name of time
+                                except:
                                     print('图片保存失败')
                                 nd.settable(save_time, False, False, False, False)
                                 #########################
                                 img_car_q.put(img_crop)
+                                p = Car(self.pid, cx, cy, 'unknow', False)
                                 self.pid = self.pid + 1
-                                p = Car(self.pid, cx, cy, 'unknow', True)
                                 self.car_q.append(p)
                                 even_license.set()
                                 break
@@ -253,13 +265,15 @@ class LICENSE_thread(threading.Thread):
             # if True:
             image = img_car_q.get()
             # if image:
-            tem = HyperLPR_plate_recognition(image)
+            try:
+                tem = HyperLPR_plate_recognition(image)
+            except:
+                print("识别失败")
             print(tem)
             plate_into = "".join('%s' % id for id in tem)
-            if plate_into != '' :
-                if 6 <= len(plate_into.split(',')[0].replace('[', '').replace('\'', '')) <= 8 :
-                    nd.settable(False, False, False, plate_into.split(',')[0].replace('[', '').replace('\'', ''), False)
-                    nd.settable(False, False, False, False, plate_into.split(',')[1])
+            if 6 <= len(plate_into.split(',')[0].replace('[', '').replace('\'', '')) <= 8:
+                nd.settable(False, False, False, plate_into.split(',')[0].replace('[', '').replace('\'', ''), False)
+                nd.settable(False, False, False, False, plate_into.split(',')[1])
             else:
                 nd.settable(False, False, False, '', False)
                 nd.settable(False, False, False, False, '')
@@ -327,23 +341,24 @@ class mywindow(Ui_Dialog):
         self.cars = []
 
         # 模型路径
-        self.model_bin = r"F:\ssd\MobileNetSSD_deploy.caffemodel"
-        self.config_text = r"F:\ssd\MobileNetSSD_deploy.prototxt"
-        # 类别信息
-        self.objName = ["background",
-                        "aeroplane", "bicycle", "bird", "boat",
-                        "bottle", "bus", "car", "cat", "chair",
-                        "cow", "diningtable", "dog", "horse",
-                        "motorbike", "person", "pottedplant",
-                        "sheep", "sofa", "train", "tvmonitor"]
-
-        # 加载模型
-        self.net = cv2.dnn.readNetFromCaffe(self.config_text, self.model_bin)
+        # self.model_bin = r"F:\ssd\MobileNetSSD_deploy.caffemodel"
+        # self.config_text = r"F:\ssd\MobileNetSSD_deploy.prototxt"
+        # # 类别信息
+        # self.objName = ["background",
+        #                 "aeroplane", "bicycle", "bird", "boat",
+        #                 "bottle", "bus", "car", "cat", "chair",
+        #                 "cow", "diningtable", "dog", "horse",
+        #                 "motorbike", "person", "pottedplant",
+        #                 "sheep", "sofa", "train", "tvmonitor"]
+        #
+        # # 加载模型
+        # self.net = cv2.dnn.readNetFromCaffe(self.config_text, self.model_bin)
 
         self.cars = []
         self.count_up = 0
         self.count_down = 0
         self.pid = 1
+
     def openimage(self):
         global pt_video_counter
         self.video_type = self.TYPE_VIDEO
@@ -426,6 +441,8 @@ class mywindow(Ui_Dialog):
                 image = frame
 
                 if (pt_video_counter % (int)(self.timer.frequent * self.INTERVAL) == 0):  # INTERVAL
+                    self.line_up.setText(str(self.yolo_thread.count_up))
+                    self.line_down.setText(str(self.yolo_thread.count_down))
                     im_q.put(frame)  # 6_16,modified
                     even_yolo.set()
                     # blobImage = cv2.dnn.blobFromImage(image, 0.007843, (300, 300), (127.5, 127.5, 127.5), True, False)
@@ -495,15 +512,10 @@ class mywindow(Ui_Dialog):
                 temp_pixmap = temp_pixmap.scaled(self.graphicsView.width(), self.graphicsView.height())
                 self.graphicsView.setPixmap(temp_pixmap)
                 pt_video_counter += 1
-
-
-
-
-
             else:
+                #time.sleep(3)
                 print("read failed, no frame data")
                 self.reset()
-
         else:
             print('end')
             self.reset()  # open file or capturing device error, init again
@@ -585,8 +597,8 @@ class mywindow(Ui_Dialog):
             predix = ' 保存时间：' + time.strftime('%H{h}%M{f}%S{s}%Y{y}%m{m}%d{d}').format(y='年', m='月', d='日', h='时',
                                                                                        f='分', s='秒')
             if not os.path.exists(os.path.join(CURPATH, save_path)):
-                predix = '%s' % ('时间') + '%45s' % ('类型') + '%20s' % ('车牌') + '%15s' % ('车速') + '%25s' % (
-                    '置信度') + '\n' + predix
+                predix = '%s' % ('时间') + '%45s' % ('类型') + '%20s' % ('置信度') + '%15s' % ('车牌') + '%25s' % (
+                    '车牌置信度') + '\n' + predix
             with open(os.path.join(CURPATH, save_path), 'a+') as f:
                 f.write(predix + '\n')
                 for line in range(self.line_counter):
@@ -618,12 +630,12 @@ class mywindow(Ui_Dialog):
             if not os.path.exists(os.path.join(CURPATH, save_path)):
                 pass
             _ = 0
-            for content_ in ['时间', '类型', '车牌', '车速', '置信度']:
+            for content_ in ['时间', '类型', '置信度', '车牌', '车牌置信度']:
                 worksheet.write(0, _, label=content_)
                 _ += 1
             for line in range(self.line_counter):
                 for _ in range(5):
-                    worksheet.write(line + 1, _, label=(self.tableWidget.item(line, _)).toString())
+                    worksheet.write(line + 1, _, label=(self.tableWidget.item(line, _)).text())
                 if not save_path.endswith('.xls'):
                     save_path = save_path + '.xls'
                 workbook.save(save_path)

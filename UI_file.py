@@ -213,7 +213,7 @@ class Ui_Dialog(QMainWindow):
         Dialog.setWindowTitle(_translate("Dialog", "车辆识别系统"))
         self.pushButton.setText(_translate("Dialog", "   "))
         self.pushButton_2.setText(_translate("Dialog", "导入视频"))
-        self.pushButton_3.setText(_translate("Dialog", "启动摄像"))
+        self.pushButton_3.setText(_translate("Dialog", "打开摄像头"))
         self.pushButton_4.setText(_translate("Dialog", "导出数据"))
 
     def set_rectangle(self):
@@ -244,7 +244,7 @@ class Ui_Dialog(QMainWindow):
             self.CAMID=value_
             
     def set_IOU(self):
-        value1_, ok_1 =QInputDialog.getDouble(QWidget(),'get para','输入IOU',0.0,0,1,3)
+        value1_, ok_1 =QInputDialog.getDouble(QWidget(),'get para','输入IOU',0.8,0,1,3)
         if ok_1:
             self.IOU=value1_
 
